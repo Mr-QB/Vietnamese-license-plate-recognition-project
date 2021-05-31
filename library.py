@@ -6,20 +6,20 @@ folder2 = 'D:\Code python\Lam-quen-voi-thu-vien-OpenCV/train2'
 
 w,h=20,20
 
-def tien_su_ly(img): #Hàm trả về list các contour của ảnh có thể là ký tự
+def pretreatment(img): #Function returns a list of 10 contours of an image
     img_gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-    noise_removal = cv2.bilateralFilter(img_gray,9,75,75)#bộ lọc làm mờ 
-    equal_histogram = cv2.equalizeHist(noise_removal)#cân bằng lại hình ảnh, làm ảnh không quá sáng hoặc tối
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT,(5,5))#lấy kernel
-    morph_image = cv2.morphologyEx(equal_histogram,cv2.MORPH_OPEN,kernel,iterations=20)#
+    noise_removal = cv2.bilateralFilter(img_gray,9,75,75) #blur filter  
+    equal_histogram = cv2.equalizeHist(noise_removal) #rebalance the contrast of the image, making it not too bright or too dark
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT,(5,5)) #get kernel
+    morph_image = cv2.morphologyEx(equal_histogram,cv2.MORPH_OPEN,kernel,iterations=20)
     sub_morp_image = cv2.subtract(equal_histogram,morph_image)#xóa phông, kết hợp giữa ảnh đã làm mờ và ảnh đã lọc ra hình góc(morphologyEx) trái ngược với cv2.add
-    ret,thresh_image = cv2.threshold(sub_morp_image,0,255,cv2.THRESH_OTSU)#ngưỡng ảnh
-    canny_image = cv2.Canny(thresh_image,250,255)#lấy egde
+    ret,thresh_image = cv2.threshold(sub_morp_image,0,255,cv2.THRESH_OTSU) #threshold photo
+    canny_image = cv2.Canny(thresh_image,250,255)#detect edge
     kernel = np.ones((3,3), np.uint8)
-    dilated_image = cv2.dilate(canny_image,kernel,iterations=1)#tăng độ sắc nhọn cho egde
-    contours, hierarchy = cv2.findContours(dilated_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)#lấy contours
-    contours = sorted(contours, key = cv2.contourArea, reverse = True)[:10]#lấy ra 10 contour có diện tích lớn nhất
-    return contours #trả về list 10 contours có diện tích lớn nhất
+    dilated_image = cv2.dilate(canny_image,kernel,iterations=1) #increase edge sharpness
+    contours, hierarchy = cv2.findContours(dilated_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) #get contours
+    contours = sorted(contours, key = cv2.contourArea, reverse = True)[:10] #get 10 contours with the largest area
+    return contours #returns a list of 10 contours of an image
 
 def wh(arr):
     min_x=1000000
@@ -48,9 +48,9 @@ def detect_plate(contours,img):
     list_img_filter_plate = []
     for c in contours:
         _,_,w,h = cv2.boundingRect(c)
-        peri = cv2.arcLength(c, True)#lấy ra chu vi của từng contour
-        approx = cv2.approxPolyDP(c, 0.06 * peri, True)#xấp xỉ đa giác
-        if len(approx) == 4 and w/w_img>0.01 and h/h_img>0.01 :#nếu là tứ giác
+        peri = cv2.arcLength(c, True) #get the perimeter of each contour 
+        approx = cv2.approxPolyDP(c, 0.06 * peri, True) # polygon approximation 
+        if len(approx) == 4 and w/w_img>0.01 and h/h_img>0.01 :# If it is a quadrilateral
             approx=approx.reshape(-1,2)
             screenCnt.append(approx)
     a = screenCnt
@@ -59,12 +59,12 @@ def detect_plate(contours,img):
         list_img_filter_plate.append(cut(img,x_min,x_max+3,y_min,y_max+3))
     return list_img_filter_plate,a
 
-def check(contours,img): #kiểm tra đối tượng nào có thể là ký tự   
+def check(contours,img): #check which object can be a character
     contour_filter = []
     sum = 0           
-    area_cnt = [cv2.contourArea(cnt) for cnt in contours]#tạo mảng lưu diện tích các contours
-    area_sort = np.argsort(area_cnt)[::-1] #sắp xếp thứ tự các contours theo diện tích giảm dần
-    area_sort[:20]#lấy 20 phần tử có diện tích lớn nhất
+    area_cnt = [cv2.contourArea(cnt) for cnt in contours]#create an array to store the area of contours
+    area_sort = np.argsort(area_cnt)[::-1] #sort contours in descending order of area
+    area_sort[:20] #take the 20 elements with the largest area
     w_img,h_img,_=img.shape
     for a in area_sort[:10]:
         cnt = contours[a]
@@ -101,7 +101,7 @@ def detect_char(list_img_filter_plate): #lọc các contours, xem vùng nào có
         #thre_mor = cv2.morphologyEx(thre,cv2.MORPH_DILATE,kerel3)
         contours,hier = cv2.findContours(thre,cv2.RETR_LIST,cv2.CHAIN_APPROX_SIMPLE)    
         contour_char = check(contours,img_filter_plate)
-        contour_char = sorted(contour_char, key=take_second)#sắp xếp lại contour theo thứ tự trái qua phải
+        contour_char = sorted(contour_char, key=take_second) #rearrange borders in left order
         img_char = cut_img(img_filter_plate,contour_char)
         stt_cnt+=1
         if len(contour_char)>len_contour_fit  :
@@ -112,7 +112,7 @@ def detect_char(list_img_filter_plate): #lọc các contours, xem vùng nào có
             stt_cnt_end = stt_cnt
     return img_filter_plate_fit,contour_char_fit,list_img_char_fit,stt_cnt_end
 
-def cut_img(img,contour_filter): #hàm lọc ra các ảnh đối tượng nhỏ để xét, thay vì xét trên toàn bộ img ban đầu
+def cut_img(img,contour_filter): 
     img_filter = []
     for cnt in contour_filter:
         img_1 = img.copy()
@@ -121,7 +121,7 @@ def cut_img(img,contour_filter): #hàm lọc ra các ảnh đối tượng nhỏ
         img_filter.append(img_cut)
     return img_filter
 
-def train_ky_tu(list_img_char):#dùng knn để nhận biết ký tự có trong biển số
+def train_ky_tu(list_img_char): #Use knn to recognize the characters in the number plate
     strChars = ''
     data_train = np.loadtxt("data_train.txt", np.float32)
     data_train_labels = np.loadtxt("data_train_labels.txt", np.float32)
@@ -138,9 +138,9 @@ def train_ky_tu(list_img_char):#dùng knn để nhận biết ký tự có trong
         strChars = strChars + strCurrentChar 
     return strChars
 
-def drawBoundingBox(img, cnt):
-    x,y,w,h = cv2.boundingRect(cnt)#tìm ra tọa độ điểm góc phía bên trái , chiều cao, chiều rộng của 1 contour 
-    img = cv2.rectangle(img, (x,y),(x+w,y+h),(0,255,0),2)#vẽ các hình vuông bao quanh contour theo thống số tính được phía trên
+def drawBoundingBox(img, cnt): #draw contours for contours
+    x,y,w,h = cv2.boundingRect(cnt)
+    img = cv2.rectangle(img, (x,y),(x+w,y+h),(0,255,0),2)
     return img
 
 def write_text(img,cnt,strChars):
