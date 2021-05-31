@@ -92,24 +92,27 @@ def detect_char(list_img_filter_plate): #lọc các contours, xem vùng nào có
     stt_cnt = -1
     stt_cnt_end = None
     for img_filter_plate in list_img_filter_plate:
-        roi_gray = cv2.cvtColor(img_filter_plate,cv2.COLOR_BGR2GRAY)
-        roi_blur = cv2.GaussianBlur(roi_gray,(3,3),1)
-        thre = cv2.adaptiveThreshold(roi_blur,255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 21, 21)#ngưỡng ảnh
-        #cv2.imshow('end',thre)
-        #cv2.waitKey()
-        kerel3 = cv2.getStructuringElement(cv2.MORPH_RECT,(3,3))
-        #thre_mor = cv2.morphologyEx(thre,cv2.MORPH_DILATE,kerel3)
-        contours,hier = cv2.findContours(thre,cv2.RETR_LIST,cv2.CHAIN_APPROX_SIMPLE)    
-        contour_char = check(contours,img_filter_plate)
-        contour_char = sorted(contour_char, key=take_second) #rearrange borders in left order
-        img_char = cut_img(img_filter_plate,contour_char)
-        stt_cnt+=1
-        if len(contour_char)>len_contour_fit  :
-            len_contour_fit = len(contour_char)
-            img_filter_plate_fit = img_filter_plate
-            contour_char_fit = contour_char
-            list_img_char_fit = img_char
-            stt_cnt_end = stt_cnt
+        try:
+            roi_gray = cv2.cvtColor(img_filter_plate,cv2.COLOR_BGR2GRAY)
+            roi_blur = cv2.GaussianBlur(roi_gray,(3,3),1)
+            thre = cv2.adaptiveThreshold(roi_blur,255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 21, 21)#ngưỡng ảnh
+            #cv2.imshow('end',thre)
+            #cv2.waitKey()
+            kerel3 = cv2.getStructuringElement(cv2.MORPH_RECT,(3,3))
+            #thre_mor = cv2.morphologyEx(thre,cv2.MORPH_DILATE,kerel3)
+            contours,hier = cv2.findContours(thre,cv2.RETR_LIST,cv2.CHAIN_APPROX_SIMPLE)    
+            contour_char = check(contours,img_filter_plate)
+            contour_char = sorted(contour_char, key=take_second) #rearrange borders in left order
+            img_char = cut_img(img_filter_plate,contour_char)
+            stt_cnt+=1
+            if len(contour_char)>len_contour_fit  :
+                len_contour_fit = len(contour_char)
+                img_filter_plate_fit = img_filter_plate
+                contour_char_fit = contour_char
+                list_img_char_fit = img_char
+                stt_cnt_end = stt_cnt
+        except:
+            continue
     return img_filter_plate_fit,contour_char_fit,list_img_char_fit,stt_cnt_end
 
 def cut_img(img,contour_filter): 
@@ -125,17 +128,21 @@ def train_char(list_img_char): #Use knn to recognize the characters in the numbe
     strChars = ''
     data_train = np.loadtxt("data_train.txt", np.float32)
     data_train_labels = np.loadtxt("data_train_labels.txt", np.float32)
+    
     for img in list_img_char:
-        img_gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-        imgROIResized = cv2.resize(img_gray, (w,h))
-        npaROIResized = imgROIResized.reshape((1, w*h))
-        npaROIResized = np.float32(npaROIResized)
-        kNearest = cv2.ml.KNearest_create()
-        kNearest.setDefaultK(1)                                                         
-        kNearest.train(data_train, cv2.ml.ROW_SAMPLE, data_train_labels) 
-        _,kq,_,_ = kNearest.findNearest(npaROIResized,3)
-        strCurrentChar = str(chr(int(kq[0][0])))
-        strChars = strChars + strCurrentChar 
+        try:
+            img_gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+            imgROIResized = cv2.resize(img_gray, (w,h))
+            npaROIResized = imgROIResized.reshape((1, w*h))
+            npaROIResized = np.float32(npaROIResized)
+            kNearest = cv2.ml.KNearest_create()
+            kNearest.setDefaultK(1)                                                         
+            kNearest.train(data_train, cv2.ml.ROW_SAMPLE, data_train_labels) 
+            _,kq,_,_ = kNearest.findNearest(npaROIResized,3)
+            strCurrentChar = str(chr(int(kq[0][0])))
+            strChars = strChars + strCurrentChar 
+        except:
+            continue
     return strChars
 
 def drawBoundingBox(img, cnt): #draw contours for contours
