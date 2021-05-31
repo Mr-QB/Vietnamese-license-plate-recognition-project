@@ -4,7 +4,7 @@ import numpy as np
 
 ################## PLATE #################
 img = cv2.imread('D:/test/test.png')#read pictures 
-contour = tv.tien_su_ly(img) # extract contour of the image
+contour = tv.pretreatment(img) # extract contour of the image
 list_img_plate,cnt_plate = tv.detect_plate(contour,img) #detect images that may be plate 
 
 ####################### CHAR ##########################
