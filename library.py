@@ -121,7 +121,7 @@ def cut_img(img,contour_filter):
         img_filter.append(img_cut)
     return img_filter
 
-def train_ky_tu(list_img_char): #Use knn to recognize the characters in the number plate
+def train_char(list_img_char): #Use knn to recognize the characters in the number plate
     strChars = ''
     data_train = np.loadtxt("data_train.txt", np.float32)
     data_train_labels = np.loadtxt("data_train_labels.txt", np.float32)
