@@ -2,11 +2,12 @@ import cv2
 import thuvien as tv 
 import numpy as np
 
-#plate
-img = cv2.imread('D:/test/test.png')#đọc ảnh
-contour = tv.tien_su_ly(img) # rút ra contour của toàn ảnh
-list_img_plate,cnt_plate = tv.detect_plate(contour,img) #rút ra ảnh có khả năng là plate 
-#char
+################## PLATE #################
+img = cv2.imread('D:/test/test.png')#read pictures 
+contour = tv.tien_su_ly(img) # extract contour of the image
+list_img_plate,cnt_plate = tv.detect_plate(contour,img) #detect images that may be plate 
+
+####################### CHAR ##########################
 img_filter_plate,contour_char,list_img_char,stt_cnt = tv.detect_char(list_img_plate)
 imgOrigin = img_filter_plate.copy()
 for i in contour_char:
@@ -23,4 +24,4 @@ cv2.waitKey()
 '''for img in list_img_char:
     cv2.imshow('img1',img)
     cv2.waitKey()'''
-print("biển số xe có dạng : ",ky_tu)
+print("License plate has the form : ",ky_tu)
