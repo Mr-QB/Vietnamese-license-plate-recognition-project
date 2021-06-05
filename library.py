@@ -84,7 +84,7 @@ def check(contours,img): #check which object can be a character
 def take_second(elem):
     return elem[0][0][0]  
 
-def detect_char(list_img_filter_plate): #lọc các contours, xem vùng nào có khả năng là ký tự
+def detect_char(list_img_filter_plate): #filter contours, see which areas are likely to be characters 
     len_contour_fit=0
     img_filter_plate_fit=[]
     contour_char_fit = []
