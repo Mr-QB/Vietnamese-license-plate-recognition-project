@@ -1,8 +1,8 @@
 import cv2
 import numpy as np
 import os
-folder1 = 'D:\Code python\Lam-quen-voi-thu-vien-OpenCV/train1'
-folder2 = 'D:\Code python\Lam-quen-voi-thu-vien-OpenCV/train2'
+folder1 = 'D:\Code python\train1'
+folder2 = 'D:\Code python\train2'
 
 w,h=20,20
 
