@@ -1,5 +1,6 @@
 # Vietnamese license plate recognition project
-![Blank diagram(1)](https://user-images.githubusercontent.com/74929580/126367405-b84850c1-1be4-46cc-afc1-dd0d33ab85eb.png)
+![Blank diagram](https://user-images.githubusercontent.com/74929580/126367744-73725b19-abc6-4fa8-8d42-e3dc0a366741.png)
+
 
 
 
