@@ -1,2 +1,4 @@
 # Vietnamese license plate recognition project
-The project is in the process of being completed, so the accuracy is not perfect. For plates with 2 rows, an error will appear.
+
+[Blank diagram.pdf](https://github.com/qbao1607/Vietnamese-license-plate-recognition-project/files/6850047/Blank.diagram.pdf)
+
